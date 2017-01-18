@@ -1,5 +1,8 @@
+
 -- Create and use separate database for Skynet
-CREATE DATABASE skynet;
+-- Should really drop database first, but seems complicated to do if it's non empty..
+CREATE DATABASE IF NOT EXISTS skynet;
+
 USE skynet;
 
 DROP TABLE aircraft_master;

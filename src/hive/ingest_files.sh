@@ -13,4 +13,6 @@ hadoop fs -put $SRCDIR/MASTER.txt $HFSDIR/MASTER
 hadoop fs -mkdir $HFSDIR/ACFTREF
 hadoop fs -put $SRCDIR/ACFTREF.txt $HFSDIR/ACFTREF
 
+hive -f schema_setup.hql
+
 # EOF
