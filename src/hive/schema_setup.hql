@@ -2,6 +2,8 @@
 CREATE DATABASE skynet;
 USE skynet;
 
+-- FAA Releasable Aircraft Dataset
+
 DROP TABLE aircraft_master;
 
 CREATE EXTERNAL TABLE aircraft_master (
@@ -182,3 +184,22 @@ STORED AS TEXTFILE
 LOCATION '/data/skynet/ACFTREF'
 tblproperties ("skip.header.line.count"="1");
 
+-- ADS-B Exchange data
+
+-- Simple table
+--   Treating lines of the JSON file as individual strings
+--   Simple SQL text manipulation functions will be used to get the details we need
+
+DROP TABLE adsb_data;
+
+CREATE EXTERNAL TABLE adsb_data (
+    broadcast            STRING
+)
+ROW FORMAT DELIMITED FIELDS TERMINATED BY '\n' LINES TERMINATED BY '\n'
+STORED AS TEXTFILE
+LOCATION '/data/skynet/adsb'
+tblproperties ("skip.header.line.count"="1");
+
+-- JSON Serde table
+--    Treating JSON file as JSON document and use JSON functionality to extract details
+-- TODO
