@@ -189,13 +189,10 @@ tblproperties ("skip.header.line.count"="1");
 
 -- ADS-B Exchange data
 
--- Simple table
---   Treating lines of the JSON file as individual strings
---   Simple SQL text manipulation functions will be used to get the details we need
+-- Raw data table
+DROP TABLE adsb_data_raw;
 
-DROP TABLE adsb_data;
-
-CREATE EXTERNAL TABLE adsb_data (
+CREATE EXTERNAL TABLE adsb_data_raw (
     broadcast            STRING
 )
 ROW FORMAT DELIMITED FIELDS TERMINATED BY '\n' LINES TERMINATED BY '\n'
@@ -203,6 +200,22 @@ STORED AS TEXTFILE
 LOCATION '/data/skynet/adsb'
 tblproperties ("skip.header.line.count"="1");
 
--- JSON Serde table
---    Treating JSON file as JSON document and use JSON functionality to extract details
--- TODO
+-- Extracted details table
+DROP TABLE adsb_data;
+
+CREATE TABLE adsb_data (
+    icao                 STRING  COMMENT "The transponder's permanent ICAO 24-bit address in the form of a hex code"
+  , n_number             STRING  COMMENT "Registration number"
+)
+ROW FORMAT DELIMITED
+STORED AS ORC;
+
+-- Extracting details and populating second table
+-- Make sure that the ADS-B files are uploded to HDFS before executing this (or else you will end up with an empty table)
+INSERT OVERWRITE TABLE adsb_data
+SELECT DISTINCT
+       get_json_object( adsb_data_raw.broadcast, '$.Icao' )
+     , get_json_object( adsb_data_raw.broadcast, '$.Reg' )
+FROM   adsb_data_raw;
+
+-- EOF
