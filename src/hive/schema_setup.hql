@@ -218,4 +218,20 @@ SELECT DISTINCT
      , get_json_object( adsb_data_raw.broadcast, '$.Reg' )
 FROM   adsb_data_raw;
 
+
+DROP TABLE adsb_data_us;
+
+CREATE TABLE adsb_data_us (
+    icao                 STRING  COMMENT "The transponder's permanent ICAO 24-bit address in the form of a hex code"
+  , n_number_us          STRING  COMMENT "Registration number - without leading US specific 'N'"
+)
+ROW FORMAT DELIMITED
+STORED AS ORC;
+
+INSERT OVERWRITE TABLE adsb_data_us
+SELECT icao, SUBSTR(n_number, 2) n_number_us 
+from adsb_data
+where n_number like 'N%';
+
+
 -- EOF
