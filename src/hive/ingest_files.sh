@@ -15,6 +15,6 @@ hadoop fs -put $SRCDIR/ACFTREF.txt $HFSDIR/ACFTREF
 
 # Upload ADS-B Exchange data
 hadoop fs -mkdir $HFSDIR/adsb
-hadoop fs -put $SRCDIR/*.json $HFSDIR/adsb
+hadoop fs -put $SRCDIR/**/*.json $HFSDIR/adsb
 
 # EOF
