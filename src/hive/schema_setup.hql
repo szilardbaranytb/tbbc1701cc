@@ -216,7 +216,8 @@ INSERT OVERWRITE TABLE adsb_data
 SELECT DISTINCT
        get_json_object( adsb_data_raw.broadcast, '$.Icao' )
      , get_json_object( adsb_data_raw.broadcast, '$.Reg' )
-FROM   adsb_data_raw;
+FROM   adsb_data_raw
+WHERE INT(get_json_object( adsb_data_raw.broadcast, '$.Trt' )) >= 2;
 
 
 DROP TABLE adsb_data_us;
