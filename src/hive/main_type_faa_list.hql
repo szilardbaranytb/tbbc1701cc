@@ -1,25 +1,44 @@
--- Top list of FAA registered aircraft main types
--- There is no consistency for sub type naming even for the same manufacture so
--- currently the main type is determined by stripping any dashed ending which works
--- for common Boeing and Airbus models 
+-- Find top 10 list of most common larger aircrafts without ADS-B
 SELECT count(*) cnt, main_type, mfr
 FROM (
-  SELECT mfr, regexp_replace(trim(model), "-[^-&&\\S]+$", "") AS main_type -- Remove any dashed model ending
+  SELECT mfr, 
+    CASE WHEN mfr LIKE 'MCDONNELL%' OR mfr LIKE 'EMB%' THEN
+      regexp_extract(trim(model), '([\\w]+[\\s|-]*[\\d]+)', 1) -- Extract first part of model name
+    ELSE
+      regexp_replace(trim(model), "-[^-&&\\S]+$", "") -- Remove any dashed model ending
+    END AS main_type
   FROM aircraft_master_no_transp
   JOIN aircraft_reference ON aircraft_master_no_transp.mfr_mdl_code=aircraft_reference.code
   WHERE type_acft = 5 -- Only fixed wing, multiple engine
-  AND no_seats > 30
+  AND no_seats > 25 -- Target regional jets and above
 ) dummy
-GROUP BY main_type, mfr ORDER BY cnt DESC;
+GROUP BY main_type, mfr ORDER BY cnt DESC limit 10;
 
 -- Find airlines to target
-SELECT count(*) cnt, main_type, mfr, reg_name
+SELECT count(*) cnt, main_type,  reg_name
 FROM (
-  SELECT reg_name, mfr, regexp_replace(trim(model), "-[^-&&\\S]+$", "") AS main_type -- Remove any dashed model ending
+  SELECT reg_name, 
+    CASE WHEN mfr LIKE 'MCDONNELL%' OR mfr LIKE 'EMB%' THEN
+      regexp_extract(trim(model), '([\\w]+[\\s|-]*[\\d]+)', 1) -- Extract first part of model name
+    ELSE
+      regexp_replace(trim(model), "-[^-&&\\S]+$", "") -- Remove any dashed model ending
+    END AS main_type
   FROM aircraft_master_no_transp
   JOIN aircraft_reference ON aircraft_master_no_transp.mfr_mdl_code=aircraft_reference.code
   WHERE type_acft = 5 -- Only fixed wing, multiple engine
-  AND no_seats > 30
-  AND reg_name NOT like 'WELLS%'
+  AND no_seats > 25 -- Target regional jets and above
+  AND reg_name NOT like '%TRUSTEE%'
+  AND reg_name NOT like '%LEAS%'
 ) dummy
-GROUP BY main_type, mfr, reg_name ORDER BY cnt DESC limit 10;
+GROUP BY main_type, reg_name ORDER BY cnt DESC limit 10;
+
+-- Find all the 737's without ADS-B
+SELECT count(*) cnt, main_type,  reg_name
+FROM (
+  SELECT reg_name,
+      regexp_replace(trim(model), "-[^-&&\\S]+$", "") AS main_type-- Remove any dashed model ending
+  FROM aircraft_master_no_transp
+  JOIN aircraft_reference ON aircraft_master_no_transp.mfr_mdl_code=aircraft_reference.code
+  WHERE model like '737%'
+) dummy
+GROUP BY main_type, reg_name ORDER BY cnt DESC;
