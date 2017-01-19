@@ -234,4 +234,14 @@ from adsb_data
 where n_number like 'N%';
 
 
+DROP TABLE aircraft_master_no_transp;
+
+-- Master table, containing all aircrafts *without* transponders
+CREATE TABLE aircraft_master_no_transp AS 
+SELECT am.*
+FROM aircraft_master am 
+LEFT OUTER JOIN adsb_data_us adsb_us 
+ON am.n_number = adsb_us.n_number_us
+WHERE adsb_us.n_number_us IS NULL; 
+
 -- EOF
